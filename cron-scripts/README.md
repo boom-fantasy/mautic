@@ -1,7 +1,7 @@
 - Using own user (with sudo access)
     - In the mautic root folder (for example, `/var/www/mautc/dfs-dev/`), create the folder `cron-scripts`
     - Copy over the `crons.sh` file inside the `cron-scripts` folder
-    - Ensure you've updated the `pathtoconsole` variable with the correct path
+    - Ensure you've updated the `name` variable with the mautic instance name
     - Make the file executable: `sudo chmod +x crons.sh`
     - Create the log folder: `sudo mkdir /var/log/mautic`
     - Transfer ownership of the folder to the `www-data` user: `sudo chown -R www-data:www-data /var/log/mautic`

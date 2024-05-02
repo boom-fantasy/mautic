@@ -1,9 +1,10 @@
 #! /bin/sh
 
 # Variables
+name="dfs-dev"
 phpinterpreter="/usr/bin/php"
-pathtoconsole="/var/www/mautic/dfs-dev/bin/console"
-lockfile="/tmp/mautic-crons.lock"
+pathtoconsole="/var/www/mautic/${name}/bin/console"
+lockfile="/tmp/mautic-${name}crons.lock"
 logdir="/var/log/mautic"
 
 # Trap function to ensure cleanup
@@ -69,5 +70,5 @@ wait
 # Parallel command execution
 execute_command "mautic:emails:send --lock-name=thread1 --lock_mode=flock --message-limit=790" &
 execute_command "mautic:emails:send --lock-name=thread2 --lock_mode=flock --message-limit=790" &
-execute_command "mautic:emails:send --lock_name=thread3 --lock_mode=flock --message_limit=790" &
+execute_command "mautic:emails:send --lock-name=thread3 --lock_mode=flock --message-limit=790" &
 wait
