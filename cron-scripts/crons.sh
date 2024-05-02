@@ -5,7 +5,7 @@ name="dfs-dev"
 phpinterpreter="/usr/bin/php"
 pathtoconsole="/var/www/mautic/${name}/bin/console"
 lockfile="/tmp/mautic-${name}crons.lock"
-logdir="/var/log/mautic"
+logdir="/var/log/mautic/${name}/crons"
 
 # Trap function to ensure cleanup
 cleanup() {
@@ -38,16 +38,25 @@ touch "$lockfile"  # Create a new lockfile or refresh the existing one
 execute_command() {
     command_name=$(echo $1 | cut -d ' ' -f 1 | tr ':' '_')  # Extract and normalize command name for filename
     cmd_logfile="$logdir/${command_name}.log"  # Create log file based on command
+    log_output="${2:-true}" # Use default true if no parameter is passed
 
     START_TIME=$(date +%s%N)
 
     echo "$(date '+%Y-%m-%d %H:%M:%S') Executing command: $phpinterpreter $pathtoconsole $1" >> "$cmd_logfile"
-    
-    if ! $phpinterpreter $pathtoconsole $1 >> "$cmd_logfile" 2>&1; then
-        echo "Failed to execute $command_name, see $cmd_logfile for details"
-        return 1
+
+    # Conditional logging based on the log_output parameter
+    if [ "$log_output" = true ]; then
+        if ! $phpinterpreter $pathtoconsole $1 >> "$cmd_logfile" 2>&1; then
+            echo "Failed to execute $command_name, see $cmd_logfile for details" >> "$cmd_logfile"
+            return 1
+        fi
+    else
+        if ! $phpinterpreter $pathtoconsole $1 > /dev/null 2>&1; then
+            echo "Failed to execute $command_name. You may want to turn on log_output for this command for easier debugging."
+            return 1
+        fi
     fi
-    
+
     END_TIME=$(date +%s%N)
     ELAPSED_TIME=$(( (END_TIME - START_TIME) / 1000000 ))  # Calculate elapsed time in milliseconds
     echo "$(date '+%Y-%m-%d %H:%M:%S') Execution time for $command_name: $ELAPSED_TIME ms" >> "$cmd_logfile"
@@ -57,9 +66,9 @@ execute_command() {
 mkdir -p "$logdir"
 
 # Execute commands in sequence
-execute_command "mautic:segments:update --batch-limit=900"
-execute_command "mautic:campaigns:update --batch-limit=300"
-execute_command "mautic:campaigns:trigger"
+execute_command "mautic:segments:update --batch-limit=900" false
+execute_command "mautic:campaigns:update --batch-limit=300" false
+execute_command "mautic:campaigns:trigger" false
 
 # Parallel command execution
 execute_command "mautic:broadcasts:send --max-threads=3 --thread-id=1 --batch=800" &

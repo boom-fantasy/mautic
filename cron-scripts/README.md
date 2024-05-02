@@ -3,8 +3,8 @@
     - Copy over the `crons.sh` file inside the `cron-scripts` folder
     - Ensure you've updated the `name` variable with the mautic instance name
     - Make the file executable: `sudo chmod +x crons.sh`
-    - Create the log folder: `sudo mkdir /var/log/mautic`
-    - Transfer ownership of the folder to the `www-data` user: `sudo chown -R www-data:www-data /var/log/mautic`
+    - Create the log folder `sudo mkdir -p /var/log/mautic/dfs-dev/crons`
+    - Transfer ownership of the folder to the `www-data` user: `sudo chown -R www-data:www-data /var/log/mautic/dfs-dev/crons`
 - Then using the `www-data` user, set up the cronjob to call the `crons.sh` script
     - Switch to the `www-data` user: `sudo su - www-data`
     - Edit the cronjob: `crontab e`
