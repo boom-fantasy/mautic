@@ -1,9 +1,10 @@
 #! /bin/sh
 
 # Variables
+name="dfs-dev"
 phpinterpreter="/usr/bin/php"
-pathtoconsole="/var/www/mautic/dfs-dev/bin/console"
-lockfile="/tmp/mautic-crons.lock"
+pathtoconsole="/var/www/mautic/${name}/bin/console"
+lockfile="/tmp/mautic-${name}crons.lock"
 logdir="/var/log/mautic"
 
 # Trap function to ensure cleanup
