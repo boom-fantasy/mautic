@@ -1,0 +1,13 @@
+- Using own user (with sudo access)
+    - In the mautic root folder (for example, `/var/www/mautc/dfs-dev/`), create the folder `cron-scripts`
+    - Copy over the `crons.sh` file inside the `cron-scripts` folder
+    - Ensure you've updated the `pathtoconsole` variable with the correct path
+    - Make the file executable: `sudo chmod +x crons.sh`
+    - Create the log folder: `sudo mkdir /var/log/mautic`
+    - Transfer ownership of the folder to the `www-data` user: `sudo chown -R www-data:www-data /var/log/mautic`
+- Then using the `www-data` user, set up the cronjob to call the `crons.sh` script
+    - Switch to the `www-data` user: `sudo su - www-data`
+    - Edit the cronjob: `crontab e`
+    - Add in the cronjob and remove all other mautic related cronjobs: `* * * * * /var/www/mautic/dfs-dev/cron-scripts/crons.sh`
+    - After a minute, confirm via the log files that the cronjobs ran successfully
+    - Set up a test using the Mautic dashboard so that an actual email is sent as part of a real test using queued email delivery
