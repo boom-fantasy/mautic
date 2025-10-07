@@ -831,23 +831,28 @@ abstract class AbstractIntegration implements UnifiedIntegrationInterface
                     break;
             }
         } catch (\GuzzleHttp\Exception\RequestException $exception) {
+            // Be defensive: getResponse() may be null when the HTTP layer fails to connect/timeouts.
+            $resp = method_exists($exception, 'getResponse') ? $exception->getResponse() : null;
+            $msg  = ($resp && method_exists($resp, 'getBody') && $resp->getBody())
+                ? $resp->getBody()->getContents()
+                : $exception->getMessage();
+
             return [
                 'error' => [
-                    'message' => $exception->getResponse()->getBody()->getContents(),
-                    'code'    => $exception->getCode(),
+                    'message' => $msg,
                 ],
             ];
-        }
-        if (empty($settings['ignore_event_dispatch'])) {
-            $event->setResponse($result);
-            $this->dispatcher->dispatch(
-                PluginEvents::PLUGIN_ON_INTEGRATION_RESPONSE,
-                $event
-            );
         }
         if (!empty($settings['return_raw'])) {
             return $result;
         } else {
+        // Defensive: if the HTTP client returned no response object, avoid fatal getBody() calls.
+        if (empty($result) || !is_object($result) || !method_exists($result, 'getBody')) {
+            $this->logger->error('Integration request returned null/invalid response object', [
+                'integration' => method_exists($this, 'getName') ? $this->getName() : 'unknown',
+            ]);
+            return null;
+        }
             return $this->parseCallbackResponse($result->getBody(), !empty($settings['authorize_session']));
         }
     }
