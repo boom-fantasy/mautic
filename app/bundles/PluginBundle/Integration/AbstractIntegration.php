@@ -830,7 +830,20 @@ abstract class AbstractIntegration implements UnifiedIntegrationInterface
                     ]);
                     break;
             }
-        } catch (\GuzzleHttp\Exception\RequestException $exception) {
+        } catch (\GuzzleHttp\Exception\ConnectException $exception) {
+             // Handle connection failures (DNS, network issues, etc.)
+            $this->logger->warning('Integration connection failed: ' . $exception->getMessage(), [
+                'integration' => $this->getName(),
+                'url' => $url,
+            ]);
+
+            return [
+                'error' => [
+                    'message' => 'Connection failed: ' . $exception->getMessage(),
+                ],
+            ];
+        }
+        catch (\GuzzleHttp\Exception\RequestException $exception) {
             // Be defensive: getResponse() may be null when the HTTP layer fails to connect/timeouts.
             $resp = method_exists($exception, 'getResponse') ? $exception->getResponse() : null;
             $msg  = ($resp && method_exists($resp, 'getBody') && $resp->getBody())
